@@ -63,6 +63,8 @@ def yaml_to_training_config(yaml_config: Dict[str, Any]) -> CPUMasterConfig:
 
         # Dataset
         dataset_path=dataset_cfg.get('path', ''),
+        dataset_name=dataset_cfg.get('name', ''),
+        dataset_dir=dataset_cfg.get('dataset_dir', 'data'),
         max_seq_len=dataset_cfg.get('max_seq_len', 1024),
         system_prompt=dataset_cfg.get('system_prompt', ''),
         query_field=dataset_cfg.get('query_field', 'query'),

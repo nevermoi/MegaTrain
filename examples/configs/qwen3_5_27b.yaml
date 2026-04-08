@@ -14,11 +14,15 @@ model:
   trust_remote_code: true
 
 dataset:
-  path: "dataset/Math/train"
+  # Option 1: Use dataset registry (recommended)
+  name: "metamath"
+  dataset_dir: "data"
+  # Option 2: Use direct path (legacy Arrow format)
+  # path: "/path/to/arrow/dataset"
+  # query_field: "query"
+  # response_field: "response"
   max_seq_len: 1024
   num_workers: 2
-  query_field: "query"
-  response_field: "response"
 
 training:
   batch_size: 64

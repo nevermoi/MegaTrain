@@ -46,6 +46,8 @@ class CPUMasterConfig:
 
     # Dataset
     dataset_path: str = ""
+    dataset_name: str = ""
+    dataset_dir: str = "data"
     max_seq_len: int = 1024
     system_prompt: str = ""
     query_field: str = "query"
@@ -82,8 +84,8 @@ class CPUMasterConfig:
                 f"({2 * self.checkpoint_interval}). This may cause gradient slab starvation."
             )
 
-        if not self.dataset_path:
-            raise ValueError("dataset_path must be specified")
+        if not self.dataset_path and not self.dataset_name:
+            raise ValueError("Must specify either dataset_path or dataset_name")
 
         valid_attn = ("flash_attention_2", "sdpa", "eager")
         if self.attn_implementation not in valid_attn:
