@@ -4,7 +4,7 @@
 
 ### Full Precision Training of 100B+ Parameter LLMs on a Single GPU
 
-[![Paper](https://img.shields.io/badge/Paper-arXiv%202602.04816-red)](https://arxiv.org/abs/2602.04816)
+
 [![Paper](https://img.shields.io/badge/Paper-arXiv%202604.05091-red)](https://arxiv.org/abs/2604.05091)
 [![GitHub Stars](https://img.shields.io/github/stars/DLYuanGod/MegaTrain?style=social)](https://github.com/DLYuanGod/MegaTrain/stargazers)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
