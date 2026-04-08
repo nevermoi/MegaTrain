@@ -144,9 +144,9 @@ See [`examples/configs/`](examples/configs/) for ready-made configurations.
 | `qwen3_8b.yaml` | Qwen 3 8B | Dense |
 | `qwen3_5_27b.yaml` | Qwen 3.5 27B | Hybrid (linear+full attn) |
 | `qwen3_next_80b.yaml` | Qwen3-Next 80B-A3B | Hybrid + MoE |
-| `glm4_flash.yaml` | GLM-4-Flash 9B | Dense |
+| `glm4_flash.yaml` | GLM-4.7-Flash | MoE |
 | `llama3_8b.yaml` | Llama 3.1 8B | Dense |
-| `gpt_oss_20b.yaml` | GPT-OSS 20B | Dense |
+| `gpt_oss_20b.yaml` | GPT-OSS 20B | MoE |
 
 ## Performance
 
