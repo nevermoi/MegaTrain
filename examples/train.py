@@ -83,7 +83,7 @@ def main():
             seed=42,
             log_interval=1,
         )
-        optimizer_type = "adamw"
+        optimizer_type = "deepspeed_adam"
         num_workers = 2
 
     # Override with command line arguments

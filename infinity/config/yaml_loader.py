@@ -114,7 +114,7 @@ def get_optimizer_type(yaml_config: Dict[str, Any]) -> str:
         Optimizer type string ('deepspeed_adam' or 'adamw')
     """
     optimizer_cfg = yaml_config.get('optimizer', {})
-    return optimizer_cfg.get('type', 'adamw')
+    return optimizer_cfg.get('type', 'deepspeed_adam')
 
 
 def get_num_workers(yaml_config: Dict[str, Any]) -> int:
