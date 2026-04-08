@@ -1,4 +1,4 @@
-"""Setup script for Horizon-LM: Single-GPU Large Model Training Toolkit."""
+"""Setup script for MegaTrain: Single-GPU Large Model Training Toolkit."""
 
 from setuptools import setup, find_packages
 from pathlib import Path
@@ -44,13 +44,13 @@ except ImportError:
     print("You can install CUDA extension later by running: pip install -e .")
 
 setup(
-    name="horizon-lm",
-    version="0.1.0",
-    author="Horizon-LM Team",
-    description="Horizon-LM: Single-GPU Large Model Training with CPU-backed parameters",
+    name="megatrain",
+    version="0.2.0",
+    author="MegaTrain Team",
+    description="MegaTrain: Single-GPU Large Model Training with CPU-backed parameters",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/Horizon-LM",
+    url="https://github.com/DLYuanGod/MegaTrain",
     packages=find_packages(include=["infinity", "infinity.*"]),
     python_requires=">=3.9",
     install_requires=[
@@ -87,5 +87,5 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
     ],
-    keywords="deep-learning, large-language-models, training, gpu, cpu-offloading",
+    keywords="deep-learning, large-language-models, training, gpu, cpu-offloading, megatrain",
 )

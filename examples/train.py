@@ -1,15 +1,15 @@
 """
-CPU Master Training Script - Optimized for Single-GPU Large Model Training
+MegaTrain Training Script — Universal Single-GPU Large Model Training
 
-This script demonstrates training large language models (e.g., Qwen 2.5 32B) on a single GPU
-using CPU-backed parameters with double buffering and async pipeline.
+Supports any HuggingFace decoder-only model: Llama 2/3/4, Qwen 2/3/3.5,
+Mistral, DeepSeek, Phi, Gemma, and more.
 
 Usage:
     # Train with YAML config
-    python train_cpu_master_v10.py --config configs/train_config.yaml
+    python examples/train.py --config examples/configs/qwen_7b.yaml
 
-    # Train with default config
-    python train_cpu_master_v10.py
+    # Train with config + overrides
+    python examples/train.py --config examples/configs/llama3_8b.yaml --batch-size 64 --num-steps 500
 """
 
 import logging
@@ -21,8 +21,7 @@ import torch
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# Import from infinity library
-from infinity import CPUMasterModel, MetaMathDataset, collate_fn
+from infinity import CPUMasterModel, ChatDataset, collate_fn
 from infinity.config import load_training_config, load_yaml_config, get_optimizer_type, get_num_workers, CPUMasterConfig
 
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
@@ -43,36 +42,16 @@ except ImportError:
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Train large language models with CPU-backed parameters")
-    parser.add_argument(
-        "--config",
-        type=str,
-        default=None,
-        help="Path to YAML configuration file (e.g., configs/train_config.yaml)"
-    )
-    parser.add_argument(
-        "--model-name",
-        type=str,
-        default=None,
-        help="Override model name from config"
-    )
-    parser.add_argument(
-        "--dataset-path",
-        type=str,
-        default=None,
-        help="Override dataset path from config"
-    )
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=None,
-        help="Override batch size from config"
-    )
-    parser.add_argument(
-        "--num-steps",
-        type=int,
-        default=None,
-        help="Override number of training steps from config"
-    )
+    parser.add_argument("--config", type=str, default=None,
+                        help="Path to YAML configuration file")
+    parser.add_argument("--model-name", type=str, default=None,
+                        help="Override model name from config")
+    parser.add_argument("--dataset-path", type=str, default=None,
+                        help="Override dataset path from config")
+    parser.add_argument("--batch-size", type=int, default=None,
+                        help="Override batch size from config")
+    parser.add_argument("--num-steps", type=int, default=None,
+                        help="Override number of training steps from config")
     return parser.parse_args()
 
 
@@ -89,15 +68,15 @@ def main():
     else:
         logger.info("Using default configuration")
         config = CPUMasterConfig(
-            model_name="Qwen/Qwen2.5-32B-Instruct",
+            model_name="Qwen/Qwen2.5-7B-Instruct",
             max_seq_len=1024,
-            batch_size=96,
+            batch_size=148,
             gradient_accumulation_steps=1,
             num_steps=100,
             learning_rate=1e-5,
             weight_decay=0.01,
             checkpoint_interval=4,
-            dataset_path="/work/nvme/bemy/zyuan2/code/Infinity/dataset/Math/train",
+            dataset_path="dataset/Math/train",
             num_grad_slabs=12,
             device=0,
             dtype=torch.bfloat16,
@@ -117,10 +96,11 @@ def main():
     if args.num_steps:
         config.num_steps = args.num_steps
 
-    logger.info("="*70)
-    logger.info("CPU MASTER + EXPLICIT RECOMPUTE (NO FULL GRAPH)")
-    logger.info("="*70)
+    logger.info("=" * 70)
+    logger.info("MEGATRAIN: RAM-CENTRIC SINGLE-GPU TRAINING")
+    logger.info("=" * 70)
     logger.info(f"Model: {config.model_name}")
+    logger.info(f"Attention: {config.attn_implementation}")
     logger.info(f"Dataset: {config.dataset_path}")
     logger.info(f"Batch size: {config.batch_size}")
     logger.info(f"Training steps: {config.num_steps}")
@@ -128,18 +108,29 @@ def main():
 
     torch.manual_seed(config.seed)
 
-    # Load model and tokenizer
-    logger.info("Loading model...")
-    tokenizer = AutoTokenizer.from_pretrained(config.model_name, trust_remote_code=True)
+    # Load tokenizer
+    logger.info("Loading tokenizer...")
+    tokenizer = AutoTokenizer.from_pretrained(
+        config.model_name, trust_remote_code=config.trust_remote_code
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    # Load model with specified attention implementation
+    # CRITICAL: attn_implementation is set here so HF layers use Flash Attention
+    # natively — no custom attention wrapper needed.
+    logger.info(f"Loading model with attn_implementation='{config.attn_implementation}'...")
     hf_model = AutoModelForCausalLM.from_pretrained(
         config.model_name,
         torch_dtype=config.dtype,
         device_map="cpu",
-        trust_remote_code=True
+        trust_remote_code=config.trust_remote_code,
+        attn_implementation=config.attn_implementation,
     )
+
+    # Verify attention implementation was applied
+    attn_impl = getattr(hf_model.config, '_attn_implementation', 'unknown')
+    logger.info(f"Model loaded. Attention implementation: {attn_impl}")
 
     # Create CPU Master model
     model = CPUMasterModel(hf_model, config)
@@ -166,8 +157,13 @@ def main():
             weight_decay=config.weight_decay
         )
 
-    # Setup dataset
-    dataset = MetaMathDataset(config.dataset_path, tokenizer, config.max_seq_len)
+    # Setup dataset (universal: uses tokenizer's native chat template)
+    dataset = ChatDataset(
+        config.dataset_path, tokenizer, config.max_seq_len,
+        system_prompt=config.system_prompt if config.system_prompt else None,
+        query_field=config.query_field,
+        response_field=config.response_field,
+    )
     dataloader = DataLoader(dataset, batch_size=config.batch_size, collate_fn=collate_fn, num_workers=num_workers)
     data_iter = iter(dataloader)
 
@@ -182,9 +178,9 @@ def main():
     cpu_mems = []
     process = psutil.Process()
 
-    logger.info("="*70)
+    logger.info("=" * 70)
     logger.info("Starting training...")
-    logger.info("="*70)
+    logger.info("=" * 70)
 
     # Training loop
     for step in range(config.num_steps):
@@ -215,7 +211,6 @@ def main():
         gpu_mem = torch.cuda.max_memory_allocated() / 1024**3
         cpu_mem = process.memory_info().rss / 1024**3
 
-        # GFLOPS calculation
         num_params = sum(p.numel() for p in model.get_parameters())
         flops = 6 * num_params * n_tokens
         gflops = (flops / 1e9) / step_time
@@ -249,10 +244,10 @@ def main():
     final_loss = losses[-1] if losses else 0.0
     loss_reduction = ((initial_loss - final_loss) / initial_loss * 100) if initial_loss > 0 else 0.0
 
-    logger.info("="*70)
+    logger.info("=" * 70)
     logger.info("TRAINING COMPLETE")
-    logger.info("="*70)
-    logger.info(f"Loss: {initial_loss:.4f} → {final_loss:.4f} ({loss_reduction:.1f}% reduction)")
+    logger.info("=" * 70)
+    logger.info(f"Loss: {initial_loss:.4f} -> {final_loss:.4f} ({loss_reduction:.1f}% reduction)")
     logger.info(f"Peak GPU: {torch.cuda.max_memory_allocated() / 1024**3:.2f} GB")
     logger.info(f"Peak CPU: {max(cpu_mems):.2f} GB")
     logger.info("")

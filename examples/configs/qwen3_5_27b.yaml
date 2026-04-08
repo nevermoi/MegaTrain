@@ -1,24 +1,29 @@
-# Qwen 2.5 32B Model Configuration
-# Optimized for single H100/GH200 GPU
+# Qwen 3.5 27B Model Configuration (Hybrid Linear + Full Attention, Dense)
+#
+# Architecture: 75% linear attention + 25% full attention (every 4th layer)
+# This is a DENSE model (no MoE). MegaTrain handles the hybrid attention
+# automatically via per-layer structure grouping.
+#
+# Requires: transformers >= 5.0 (for Qwen3.5 support)
 
 model:
-  name: "Qwen/Qwen2.5-32B-Instruct"
+  name: "Qwen/Qwen3.5-27B"
   dtype: "bfloat16"
   device: 0
   attn_implementation: "flash_attention_2"
   trust_remote_code: true
 
 dataset:
-  path: "/work/nvme/bemy/zyuan2/code/Infinity/dataset/Math/train"
+  path: "dataset/Math/train"
   max_seq_len: 1024
   num_workers: 2
   query_field: "query"
   response_field: "response"
 
 training:
-  batch_size: 96
+  batch_size: 64
   gradient_accumulation_steps: 1
-  num_steps: 100
+  num_steps: 500
   learning_rate: 1.0e-5
   weight_decay: 0.01
   max_grad_norm: 1.0

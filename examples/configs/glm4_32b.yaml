@@ -1,15 +1,14 @@
-# Qwen 2.5 32B Model Configuration
-# Optimized for single H100/GH200 GPU
+# GLM-4 32B Model Configuration
 
 model:
-  name: "Qwen/Qwen2.5-32B-Instruct"
+  name: "THUDM/GLM-4-32B-0414"
   dtype: "bfloat16"
   device: 0
   attn_implementation: "flash_attention_2"
   trust_remote_code: true
 
 dataset:
-  path: "/work/nvme/bemy/zyuan2/code/Infinity/dataset/Math/train"
+  path: "dataset/Math/train"
   max_seq_len: 1024
   num_workers: 2
   query_field: "query"

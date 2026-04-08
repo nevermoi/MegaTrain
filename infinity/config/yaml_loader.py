@@ -58,10 +58,15 @@ def yaml_to_training_config(yaml_config: Dict[str, Any]) -> CPUMasterConfig:
         model_name=model_cfg.get('name', 'Qwen/Qwen2.5-32B-Instruct'),
         device=model_cfg.get('device', 0),
         dtype=dtype,
+        attn_implementation=model_cfg.get('attn_implementation', 'flash_attention_2'),
+        trust_remote_code=model_cfg.get('trust_remote_code', True),
 
         # Dataset
         dataset_path=dataset_cfg.get('path', ''),
         max_seq_len=dataset_cfg.get('max_seq_len', 1024),
+        system_prompt=dataset_cfg.get('system_prompt', ''),
+        query_field=dataset_cfg.get('query_field', 'query'),
+        response_field=dataset_cfg.get('response_field', 'response'),
 
         # Training
         batch_size=training_cfg.get('batch_size', 96),
@@ -97,11 +102,6 @@ def load_training_config(config_path: str) -> CPUMasterConfig:
 
     Returns:
         CPUMasterConfig instance
-
-    Example:
-        >>> config = load_training_config('configs/train_config.yaml')
-        >>> print(config.model_name)
-        'Qwen/Qwen2.5-32B-Instruct'
     """
     yaml_config = load_yaml_config(config_path)
     return yaml_to_training_config(yaml_config)
@@ -109,9 +109,6 @@ def load_training_config(config_path: str) -> CPUMasterConfig:
 
 def get_optimizer_type(yaml_config: Dict[str, Any]) -> str:
     """Get optimizer type from YAML config.
-
-    Args:
-        yaml_config: Dictionary loaded from YAML file
 
     Returns:
         Optimizer type string ('deepspeed_adam' or 'adamw')
@@ -122,9 +119,6 @@ def get_optimizer_type(yaml_config: Dict[str, Any]) -> str:
 
 def get_num_workers(yaml_config: Dict[str, Any]) -> int:
     """Get number of DataLoader workers from YAML config.
-
-    Args:
-        yaml_config: Dictionary loaded from YAML file
 
     Returns:
         Number of workers

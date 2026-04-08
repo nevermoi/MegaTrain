@@ -5,7 +5,7 @@
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd Horizon-LM
+cd MegaTrain
 
 # Install (automatically builds CUDA extension if CUDA is available)
 pip install -e .
@@ -88,7 +88,7 @@ See `examples/configs/README.md` for detailed configuration guide.
 
 When you run `pip install -e .`:
 
-1. **Python Package**: `horizon-lm` package with all modules
+1. **Python Package**: `megatrain` package with all modules
 2. **CUDA Extension**: `cuda_pipeline` for optimized GPU operations (if CUDA available)
 3. **Dependencies**: PyTorch, Transformers, Datasets, etc.
 
@@ -131,7 +131,7 @@ python setup.py install
 
 Make sure you're in the correct directory:
 ```bash
-cd Horizon-LM
+cd MegaTrain
 pip install -e .
 ```
 

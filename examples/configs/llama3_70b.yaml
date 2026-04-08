@@ -1,25 +1,25 @@
-# Qwen 2.5 32B Model Configuration
-# Optimized for single H100/GH200 GPU
+# Llama 3 70B Model Configuration
+# Requires ~560GB CPU RAM for FP32 master weights + optimizer states
 
 model:
-  name: "Qwen/Qwen2.5-32B-Instruct"
+  name: "meta-llama/Llama-3.1-70B-Instruct"
   dtype: "bfloat16"
   device: 0
   attn_implementation: "flash_attention_2"
-  trust_remote_code: true
+  trust_remote_code: false
 
 dataset:
-  path: "/work/nvme/bemy/zyuan2/code/Infinity/dataset/Math/train"
+  path: "dataset/Math/train"
   max_seq_len: 1024
   num_workers: 2
   query_field: "query"
   response_field: "response"
 
 training:
-  batch_size: 96
+  batch_size: 32
   gradient_accumulation_steps: 1
   num_steps: 100
-  learning_rate: 1.0e-5
+  learning_rate: 5.0e-6
   weight_decay: 0.01
   max_grad_norm: 1.0
   seed: 42

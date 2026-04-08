@@ -1,25 +1,25 @@
-# Qwen 2.5 32B Model Configuration
-# Optimized for single H100/GH200 GPU
+# InternLM 2.5 7B Model Configuration
+# Note: InternLM uses trust_remote_code=true
 
 model:
-  name: "Qwen/Qwen2.5-32B-Instruct"
+  name: "internlm/internlm2_5-7b-chat"
   dtype: "bfloat16"
   device: 0
   attn_implementation: "flash_attention_2"
   trust_remote_code: true
 
 dataset:
-  path: "/work/nvme/bemy/zyuan2/code/Infinity/dataset/Math/train"
+  path: "dataset/Math/train"
   max_seq_len: 1024
-  num_workers: 2
+  num_workers: 4
   query_field: "query"
   response_field: "response"
 
 training:
-  batch_size: 96
+  batch_size: 148
   gradient_accumulation_steps: 1
-  num_steps: 100
-  learning_rate: 1.0e-5
+  num_steps: 1000
+  learning_rate: 2.0e-5
   weight_decay: 0.01
   max_grad_norm: 1.0
   seed: 42

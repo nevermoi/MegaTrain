@@ -1,24 +1,23 @@
-# Qwen 2.5 32B Model Configuration
-# Optimized for single H100/GH200 GPU
+# Yi 1.5 34B Model Configuration
 
 model:
-  name: "Qwen/Qwen2.5-32B-Instruct"
+  name: "01-ai/Yi-1.5-34B-Chat"
   dtype: "bfloat16"
   device: 0
   attn_implementation: "flash_attention_2"
-  trust_remote_code: true
+  trust_remote_code: false
 
 dataset:
-  path: "/work/nvme/bemy/zyuan2/code/Infinity/dataset/Math/train"
+  path: "dataset/Math/train"
   max_seq_len: 1024
   num_workers: 2
   query_field: "query"
   response_field: "response"
 
 training:
-  batch_size: 96
+  batch_size: 64
   gradient_accumulation_steps: 1
-  num_steps: 100
+  num_steps: 500
   learning_rate: 1.0e-5
   weight_decay: 0.01
   max_grad_norm: 1.0
