@@ -1,25 +1,23 @@
-# Mixtral 8x7B Model Configuration (MoE)
+# GLM-4-Flash Model Configuration
 #
-# Architecture: 46.7B total params, ~12.9B active (8 experts, top-2 routing)
-# Requires: transformers >= 4.36
+# Architecture: Dense transformer with RoPE
 
 model:
-  name: "mistralai/Mixtral-8x7B-Instruct-v0.1"
+  name: "THUDM/glm-4-9b-chat"
   dtype: "bfloat16"
   device: 0
   attn_implementation: "flash_attention_2"
-  trust_remote_code: false
+  trust_remote_code: true
 
 dataset:
-  path: "dataset/Math/train"
+  name: "alpaca_en_demo"
+  dataset_dir: "data"
   max_seq_len: 1024
   num_workers: 2
-  query_field: "query"
-  response_field: "response"
 
 training:
-  batch_size: 32
-  gradient_accumulation_steps: 2
+  batch_size: 128
+  gradient_accumulation_steps: 1
   num_steps: 500
   learning_rate: 1.0e-5
   weight_decay: 0.01
