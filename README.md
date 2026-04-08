@@ -148,12 +148,6 @@ See [`examples/configs/`](examples/configs/) for ready-made configurations.
 | `llama3_8b.yaml` | Llama 3.1 8B | Dense |
 | `gpt_oss_20b.yaml` | GPT-OSS 20B | MoE |
 
-## Performance
-
-| Model | GPU | TFLOPS | CPU RAM | GPU VRAM |
-|:------|:----|:-------|:--------|:---------|
-| Qwen 2.5 32B | 1x H100 | ~259 | ~327 GB | ~40 GB |
-| Qwen 3.5 27B | 1x H100 | ~157 | ~275 GB | ~38 GB |
 
 ### Key Techniques
 
