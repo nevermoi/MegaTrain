@@ -19,7 +19,12 @@ import argparse
 import psutil
 import torch
 from torch.utils.data import DataLoader
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, AutoProcessor
+try:
+    from transformers import AutoModelForImageTextToText
+    HAS_VLM_CLASS = True
+except ImportError:
+    HAS_VLM_CLASS = False
 
 from infinity import CPUMasterModel, ChatDataset, collate_fn
 from infinity.config import load_training_config, load_yaml_config, get_optimizer_type, get_num_workers, CPUMasterConfig
@@ -108,7 +113,7 @@ def main():
 
     torch.manual_seed(config.seed)
 
-    # Load tokenizer
+    # Load tokenizer and detect VLM
     logger.info("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(
         config.model_name, trust_remote_code=config.trust_remote_code
@@ -116,11 +121,27 @@ def main():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    # Auto-detect VLM: check if model config has vision_config
+    model_config = AutoConfig.from_pretrained(
+        config.model_name, trust_remote_code=config.trust_remote_code
+    )
+    is_vlm = hasattr(model_config, 'vision_config') or (
+        HAS_VLM_CLASS and type(model_config) in AutoModelForImageTextToText._model_mapping.keys()
+    )
+
+    processor = None
+    if is_vlm:
+        logger.info("VLM detected — loading with AutoModelForImageTextToText + AutoProcessor")
+        processor = AutoProcessor.from_pretrained(
+            config.model_name, trust_remote_code=config.trust_remote_code
+        )
+        load_class = AutoModelForImageTextToText if HAS_VLM_CLASS else AutoModelForCausalLM
+    else:
+        load_class = AutoModelForCausalLM
+
     # Load model with specified attention implementation
-    # CRITICAL: attn_implementation is set here so HF layers use Flash Attention
-    # natively — no custom attention wrapper needed.
     logger.info(f"Loading model with attn_implementation='{config.attn_implementation}'...")
-    hf_model = AutoModelForCausalLM.from_pretrained(
+    hf_model = load_class.from_pretrained(
         config.model_name,
         torch_dtype=config.dtype,
         device_map="cpu",
@@ -131,6 +152,8 @@ def main():
     # Verify attention implementation was applied
     attn_impl = getattr(hf_model.config, '_attn_implementation', 'unknown')
     logger.info(f"Model loaded. Attention implementation: {attn_impl}")
+    if is_vlm:
+        logger.info(f"VLM mode: vision encoder will be CPU-offloaded")
 
     # Create CPU Master model
     model = CPUMasterModel(hf_model, config)
@@ -202,8 +225,16 @@ def main():
         start_time = time.perf_counter()
 
         # Forward and backward
+        fwd_kwargs = {}
+        if is_vlm and "pixel_values" in batch:
+            fwd_kwargs["pixel_values"] = batch["pixel_values"]
+            # Pass any additional vision kwargs (e.g., image_grid_thw for Qwen-VL)
+            for k in batch:
+                if k not in ("input_ids", "attention_mask", "labels", "pixel_values", "prompt_length"):
+                    fwd_kwargs[k] = batch[k]
+
         loss_val, n_tokens, timing = model.forward_and_backward(
-            batch["input_ids"], batch["attention_mask"], batch["labels"]
+            batch["input_ids"], batch["attention_mask"], batch["labels"], **fwd_kwargs
         )
 
         # Optimizer step
