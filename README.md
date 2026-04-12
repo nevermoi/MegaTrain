@@ -19,6 +19,11 @@
 
 ---
 
+## 🚀 News
+
+- **4/12/2025:** Fully integrated with the [VERL](https://github.com/verl-project/verl) framework — single H100 GPU GRPO training for Qwen3.5-27B. See [RL Training](#rl-training-grpo).
+
+
 ## Features
 
 - **Single GPU, Massive Models** -- Train 120B+ models on one GPU by leveraging CPU RAM for parameter storage
@@ -36,11 +41,14 @@ git clone https://github.com/DLYuanGod/MegaTrain.git
 cd MegaTrain
 pip install -e .
 
-# Train with built-in demo data
-python examples/train.py --config examples/configs/llama3_8b.yaml
+# SFT: Train with built-in demo data
+python examples/sft/train.py --config examples/sft/configs/llama3_8b.yaml
 
-# Train any supported model
-python examples/train.py --config examples/configs/qwen3_5_27b.yaml
+# SFT: Train any supported model
+python examples/sft/train.py --config examples/sft/configs/qwen3_5_27b.yaml
+
+# RL (GRPO): Single-GPU RL training
+python examples/rl/train_grpo.py --config examples/rl/configs/qwen3_5_27b_grpo.yaml
 ```
 
 ## Supported Models
@@ -147,7 +155,8 @@ optimizer:
   type: "deepspeed_adam"
 ```
 
-See [`examples/configs/`](examples/configs/) for ready-made configurations.
+See [`examples/sft/configs/`](examples/sft/configs/) for ready-made SFT configurations.
+See [`examples/rl/configs/`](examples/rl/configs/) for GRPO configurations.
 
 | Config | Model | Architecture |
 |:-------|:------|:-------------|
@@ -158,6 +167,47 @@ See [`examples/configs/`](examples/configs/) for ready-made configurations.
 | `glm4_flash.yaml` | GLM-4.7-Flash | MoE |
 | `llama3_8b.yaml` | Llama 3.1 8B | Dense |
 | `gpt_oss_20b.yaml` | GPT-OSS 20B | MoE |
+
+
+## RL Training (GRPO)
+
+MegaTrain supports **single-GPU RL post-training** via GRPO (Group Relative Policy Optimization), integrated with the [VERL](https://github.com/verl-project/verl) framework as a training backend.
+
+### Why GRPO on a single GPU?
+
+Traditional RLHF/GRPO frameworks require multiple GPUs for actor, reference, critic, and rollout workers. MegaTrain's CPU-offloading architecture collapses the training side into a single GPU:
+
+| Component | Memory Location | Notes |
+|:----------|:---------------|:------|
+| Model parameters | CPU RAM | ~12 GB per 1B params (weights + optimizer) |
+| Active computation | GPU | Only 1 layer + head on GPU at a time |
+| Rollout data | CPU | Log-probs, advantages, rewards |
+
+### Tested Results (Qwen3.5-27B, GSM8K, Single H100 80GB)
+
+| Batch Size | GPU Peak | Time/Step | Status |
+|:-----------|:---------|:----------|:-------|
+| 8 (2×4) | 32 GB | 60s | ✓ |
+| 16 (4×4) | 54 GB | 35s | ✓ |
+| 32 (8×4) | >80 GB | — | OOM |
+
+### Quick Start
+
+```bash
+# GRPO training with Qwen3.5-27B on GSM8K
+python examples/rl/train_grpo.py --config examples/rl/configs/qwen3_5_27b_grpo.yaml
+```
+
+### VERL Backend Integration
+
+MegaTrain also works as a **VERL training backend** (`MegaTrainEngine`), enabling integration with VERL's full RL pipeline (rollout via vLLM + training via MegaTrain):
+
+```python
+# In VERL config
+actor_rollout_ref.actor.strategy = "megatrain"
+```
+
+See [`verl/workers/engine/megatrain/`](verl/workers/engine/megatrain/) for the engine implementation.
 
 
 ### Key Techniques
@@ -231,6 +281,7 @@ If you use MegaTrain in your research, please cite:
 This project benefits from the following open-source works:
 
 - [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory) -- Our data loading system (`dataset_info.json` registry, alpaca/sharegpt format support) is inspired by LlamaFactory's elegant dataset management design. Thanks to [@hiyouga](https://github.com/hiyouga) and all contributors.
+- [VERL](https://github.com/verl-project/verl) -- RL post-training framework. MegaTrain integrates as a VERL training backend for single-GPU GRPO/PPO/DPO training.
 - [HuggingFace Transformers](https://github.com/huggingface/transformers) -- Universal model loading and native Flash Attention integration.
 - [DeepSpeed](https://github.com/microsoft/DeepSpeed) -- SIMD-accelerated CPUAdam optimizer.
 - [Flash Attention](https://github.com/Dao-AILab/flash-attention) -- Memory-efficient attention and cross-entropy loss.
