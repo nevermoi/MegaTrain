@@ -173,23 +173,6 @@ See [`examples/rl/configs/`](examples/rl/configs/) for GRPO configurations.
 
 MegaTrain supports **single-GPU RL post-training** via GRPO (Group Relative Policy Optimization), integrated with the [VERL](https://github.com/verl-project/verl) framework as a training backend.
 
-### Why GRPO on a single GPU?
-
-Traditional RLHF/GRPO frameworks require multiple GPUs for actor, reference, critic, and rollout workers. MegaTrain's CPU-offloading architecture collapses the training side into a single GPU:
-
-| Component | Memory Location | Notes |
-|:----------|:---------------|:------|
-| Model parameters | CPU RAM | ~12 GB per 1B params (weights + optimizer) |
-| Active computation | GPU | Only 1 layer + head on GPU at a time |
-| Rollout data | CPU | Log-probs, advantages, rewards |
-
-### Tested Results (Qwen3.5-27B, GSM8K, Single H100 80GB)
-
-| Batch Size | GPU Peak | Time/Step | Status |
-|:-----------|:---------|:----------|:-------|
-| 8 (2×4) | 32 GB | 60s | ✓ |
-| 16 (4×4) | 54 GB | 35s | ✓ |
-| 32 (8×4) | >80 GB | — | OOM |
 
 ### Quick Start
 
