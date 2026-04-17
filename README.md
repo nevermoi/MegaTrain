@@ -21,8 +21,8 @@
 
 ## 🚀 News
 
-- **4/17/2025:** Multi-GPU data parallelism — 4x H100 achieves **4.7x super-linear speedup** over single GPU (1290 vs 272 TFLOPS on Qwen2.5-7B). No NCCL required — workers read from shared memory independently. Thanks to [@ckgresla](https://github.com/ckgresla) for the initial multi-GPU PR that inspired this implementation!
-- **4/12/2025:** Fully integrated with the [VERL](https://github.com/verl-project/verl) framework — single H100 GPU GRPO training for Qwen3.5-27B. See [RL Training](#rl-training-grpo).
+- **4/17/2026:** Multi-GPU data parallelism — 4x H100 achieves **4.7x super-linear speedup** over single GPU (1290 vs 272 TFLOPS on Qwen2.5-7B). No NCCL required — workers read from shared memory independently. Thanks to [@ckgresla](https://github.com/ckgresla) for the initial multi-GPU PR that inspired this implementation!
+- **4/12/2026:** Fully integrated with the [VERL](https://github.com/verl-project/verl) framework — single H100 GPU GRPO training for Qwen3.5-27B. See [RL Training](#rl-training-grpo).
 
 
 ## Features
