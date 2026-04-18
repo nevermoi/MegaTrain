@@ -186,7 +186,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2025 MegaTrain Authors
+   Copyright [yyyy] [name of copyright owner]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -199,21 +199,3 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-   =========================================================================
-   ADDITIONAL COMMERCIAL USE TERMS
-   =========================================================================
-
-   The above Apache License, Version 2.0 governs non-commercial use,
-   academic research, personal projects, and internal evaluation of
-   this software.
-
-   COMMERCIAL USE RESTRICTION: Any use of this software (or derivative
-   works thereof) for commercial purposes -- including but not limited to
-   incorporating it into a commercial product or service, offering it as
-   part of a paid platform, or using it in production systems that
-   generate revenue -- requires a separate commercial license from the
-   MegaTrain Authors.
-
-   For commercial licensing inquiries, please contact:
-   zyuan2@nd.edu

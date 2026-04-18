@@ -7,7 +7,7 @@
 
 [![Paper](https://img.shields.io/badge/Paper-arXiv%202604.05091-red)](https://arxiv.org/abs/2604.05091)
 [![GitHub Stars](https://img.shields.io/github/stars/DLYuanGod/MegaTrain?style=social)](https://github.com/DLYuanGod/MegaTrain/stargazers)
-[![License](https://img.shields.io/badge/License-Apache%202.0%20%2B%20Commercial-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0%2B-orange)](https://pytorch.org/)
 
@@ -331,4 +331,4 @@ This project benefits from the following open-source works:
 
 ## License
 
-This repository is licensed under the [Apache License 2.0](LICENSE) for non-commercial use (academic research, personal projects, and internal evaluation). **Commercial use requires a separate commercial license.** For commercial licensing inquiries, please contact zyuan2@nd.edu.
+This repository is licensed under the [Apache-2.0 License](LICENSE).
